@@ -813,7 +813,7 @@ contract PoolCore is OwnableUpgradeable, AccessControlUpgradeable, ERC165Upgrade
         }
     }
 
-    function setManagementContract(address newManagementContract) public override onlyDeployer {
+    function setManagementContract(address newManagementContract) external override onlyDeployer {
         require(Address.isContract(newManagementContract), "Address is not a contract");
 
         bytes32 slot = Constant.MANAGEMENT_CONTRACT_SLOT;

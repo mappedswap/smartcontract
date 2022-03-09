@@ -19,7 +19,23 @@ interface IStaking is IOwnable, IERC165, IERC223Recipient, IERC677Recipient, IER
 
     function setRedeemWaitPeriod(uint64 newRedeemWaitPeriod) external;
 
+    function lockedStakingAdder() external view returns (address);
+
+    function setLockedStakingAdder(address adderAddr) external;
+
     function stakeToken(IERC20 tokenAddr, uint256 amount) external;
+
+    function addLockedStaking(
+        IERC20 tokenAddr,
+        address poolAddr,
+        address userAddr,
+        uint256 amount,
+        uint64 stakeTime,
+        uint64 nodeID,
+        bytes32 stakeHash,
+        uint64 unlockInterval,
+        uint64 division
+    ) external;
 
     function requestRedemption(IERC20 tokenAddr, uint256 amount) external;
 
@@ -29,17 +45,29 @@ interface IStaking is IOwnable, IERC165, IERC223Recipient, IERC677Recipient, IER
 
     function getUserStaked(IERC20 tokenAddr, address userAddr) external view returns (uint256);
 
+    function getUserStakingDetails(IERC20 tokenAddr, address userAddr) external view returns (StakingInfo[] memory);
+
     function getUserRequestedToRedeem(IERC20 tokenAddr, address userAddr) external view returns (uint256);
 
     function getUserCanRedeemNow(IERC20 tokenAddr, address userAddr) external view returns (uint256);
 
     function getUserRedemptionDetails(IERC20 tokenAddr, address userAddr) external view returns (RedemptionInfo[] memory);
 
+    function deposit(IERC20 tokenAddr, uint256 amount) external;
+
     event StakeToken(address indexed tokenAddr, address indexed userAddr, uint256 amount);
 
     event RequestRedemption(address indexed tokenAddr, address indexed userAddr, uint256 amount);
 
     event RedeemToken(address indexed tokenAddr, address indexed userAddr, uint256 amount);
+
+    struct StakingInfo {
+        uint256 initialStakeAmount;
+        uint256 remainAmount;
+        uint64 stakeTime;
+        uint64 unlockInterval;
+        uint64 division;
+    }
 
     struct RedemptionInfo {
         uint256 amount;

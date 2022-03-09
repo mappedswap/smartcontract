@@ -103,6 +103,8 @@ interface IMiningPool is IOwnable, IERC165, IERC223Recipient, IERC677Recipient, 
 
     function poolWithdrawETH(uint256 amount) external;
 
+    event StakeRewards(address indexed userAddr, uint256 stakeAmount, uint256 stakeRewardsAmount, uint64 stakeTime, uint64 nodeID, bytes32 stakeHash);
+
     event FixedPoolStaking(address indexed userAddr, uint256 tokenAmount, uint256 equivUSD);
 
     event StakeToken(address indexed userAddr, uint256 amount);

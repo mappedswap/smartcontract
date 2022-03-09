@@ -106,22 +106,24 @@ contract RaijinSwapRouter is OwnableUpgradeable, AccessControlUpgradeable, IRaij
         address tokenB,
         address to
     ) public view override returns (bool) {
-        if (restrictedTokens[tokenA] == false && restrictedTokens[tokenB] == false) {
-            return true;
+        // The latest version is only need the role when both tokens are restricted
+        if (restrictedTokens[tokenA] == true && restrictedTokens[tokenB] == true) {
+            return hasRole(SELECTED_LP_ROLE, to);
         }
-        return hasRole(SELECTED_LP_ROLE, to);
+        return true;
     }
 
     function isSwapAllowed(address[] memory path, address from) public view override returns (bool) {
-        // If any token in path is restricted token, require the special permission
+        // Similiar to isLiquidityAllowed, if all tokens in path are restricted, require the special permission
         // And different from isLiquidityAllowed, here check the from address
+        bool check = true;
         for (uint256 i = 0; i < path.length; i++) {
-            if (restrictedTokens[path[i]] == true) {
-                return hasRole(SELECTED_SWAP_ROLE, from);
+            if (restrictedTokens[path[i]] == false) {
+                check = false;
+                break;
             }
         }
-
-        return true;
+        return check ? hasRole(SELECTED_SWAP_ROLE, from) : true;
     }
 
     function pairFor(address tokenA, address tokenB) external view override returns (address) {

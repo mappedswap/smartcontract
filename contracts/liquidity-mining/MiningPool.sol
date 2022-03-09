@@ -837,41 +837,29 @@ contract MiningPool is OwnableUpgradeable, AccessControlUpgradeable, ERC165Upgra
     ) private {
         User storage ptr = users[userAddr];
         User memory user = ptr;
-        uint64 nodeID;
+
         uint256 stakeRewardsAmount = getStakeRewardsAmount(equivUSD);
+        uint64 nodeID = newNode(amount);
+        uint64 stakeTime = uint64(block.timestamp);
 
-        // This is the stake node
-        {
-            nodeID = newNode(amount);
+        // InitialStakeAmount does not change when just redeem part of the stake
+        nodes[nodeID].initialStakeAmount = amount;
 
-            // InitialStakeAmount does not change when just redeem part of the stake
-            nodes[nodeID].initialStakeAmount = amount;
+        // Also save stakeRewardsAmount so that user can check the stake rewards received from this stake
+        nodes[nodeID].stakeRewardsAmount = stakeRewardsAmount;
 
-            // Also save stakeRewardsAmount so that user can check the stake rewards received from this stake
-            nodes[nodeID].stakeRewardsAmount = stakeRewardsAmount;
-
-            if (user.stakeStart == 0) {
-                ptr.stakeStart = nodeID;
-            } else {
-                nodes[user.stakeLast].next = nodeID;
-            }
-
-            ptr.stakeLast = nodeID;
+        if (user.stakeStart == 0) {
+            ptr.stakeStart = nodeID;
+        } else {
+            nodes[user.stakeLast].next = nodeID;
         }
 
-        // This is stake rewards node
-        {
-            nodeID = newNode(stakeRewardsAmount);
+        ptr.stakeLast = nodeID;
 
-            if (user.stakeRewardsStart == 0) {
-                ptr.stakeRewardsStart = nodeID;
-            } else {
-                nodes[user.stakeRewardsLast].next = nodeID;
-            }
-
-            ptr.stakeRewardsLast = nodeID;
-        }
-
+        // Change stake rewards to be claimed in Eurus, so no new nodes of stake rewards will be created
+        // Emit event to let external program know how much stake rewards should be given instead
+        // The hash is an unique identifier of this stake rewards among any MiningPool contracts, therefore address of this contract is included
+        emit StakeRewards(userAddr, amount, stakeRewardsAmount, stakeTime, nodeID, keccak256(abi.encodePacked(address(this), userAddr, stakeRewardsAmount, stakeTime, nodeID)));
         emit StakeToken(userAddr, amount);
         emit FixedPoolStaking(userAddr, amount, equivUSD);
     }

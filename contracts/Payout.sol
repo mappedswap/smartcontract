@@ -82,12 +82,14 @@ contract Payout is OwnableUpgradeable, IPayout {
         uint256[] memory amountList
     ) public view override returns (bool) {
         uint256 length = tokenList.length;
+        address[] memory tokenArray = new address[](length);
         uint256[] memory orderArray = new uint256[](length);
         for (uint256 i = 0; i < length; i++) {
+            tokenArray[i] = tokenList[i];
             orderArray[i] = i;
         }
 
-        QuickSort.sort(tokenList, orderArray);
+        QuickSort.sort(tokenArray, orderArray);
 
         bytes memory data = abi.encodePacked(roundID, agentAddr);
         for (uint256 k = 0; k < length; k++) {
@@ -96,7 +98,7 @@ contract Payout is OwnableUpgradeable, IPayout {
                 continue;
             }
 
-            data = abi.encodePacked(data, tokenList[k], amount);
+            data = abi.encodePacked(data, tokenArray[k], amount);
         }
 
         return rounds[roundID].agentHashes[agentAddr] == keccak256(data);
